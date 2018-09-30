@@ -1,0 +1,19 @@
+#+TITLE: Test file
+
+
+* Pamparam test                                            :space:
+
+** stale
+陈旧
+** tangential
+切, 切线
+** casually
+胡乱, 轻描淡写, 漫不经心
+
+* Test2                                                               :space:
+** sling
+吊绳, 背带
+** superficial
+浅, 肤浅的
+** cultivate
+培育

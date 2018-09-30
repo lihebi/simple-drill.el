@@ -1,0 +1,48 @@
+#+TITLE: space-repetition.el
+
+* Status
+
+** TODO add properties
+- use properties to generate schedule
+
+** TODO modifying action
+- support (e)asy or (h)ard
+- mark as DONE (but does not remove. We can change this status)
+- modify master org file (this requires to maintain a link)
+  - will the rest links be modified??
+
+** TODO add refresh (g)
+- regenerate review schedule
+  - this should remove DONE entries automatically
+
+* Introduction
+
+There exists majorly two work, the =org-drill= and =pamparam=.
+
+Org-drill is too complicated.
+- It pops so many properties in the entries
+- It requires :drill: markup for each entry, and each entry should
+  have a question, and another subtree for storing answers
+
+I don't like some design decisions of pamparam:
+- Pamparam keeps the progress inside another directory system, version
+  controlled. It is a neat idea, but I want to keep the (minimum)
+  progress with the master org file itself.
+- Also, Pamparam is generating one file for each card, resulting in
+  far too many files.
+- Seems it is designed to enter the answer and validate. There seems
+  not to be a readily supported way to enter a score manually without
+  typing the answer. Typing answer is of trouble because the answer
+  might be super long, super complex, requiring invoking other input
+  method (such as Chinese), and most importantly, typing is slow,
+  thinking is fast.
+
+
+That renders the feature of this project:
+- keep minimum meta data within the master org file
+- clean file structure: the header is the question, the rest is the
+  answer
+- only two score: yes or no, instead of 0-5
+- org-agenda kind of interface
+  - can show all or just show the due ones
+  - status mark just in the list
