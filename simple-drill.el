@@ -1,11 +1,11 @@
-;;; space-repetition.el --- A space repetition package. -*- lexical-binding: t; -*-
+;;; simple-drill.el --- A space repetition package. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 Hebi Li
 
 ;; Author: Hebi Li <lihebi.com@gmail.com>
 ;; Version: 0.1
 ;; Keywords: Space Repetition
-;; URL: http://example.com/space-repetition
+;; URL: http://github.com/lihebi/simple-drill.el
 
 ;;; Commentary:
 ;;; Code:
@@ -43,7 +43,7 @@
                             ;; collect property
                             ;; collect body
                             (myorg-subtree-points))
-                          (cdr (org-make-tags-matcher "space"))
+                          (cdr (org-make-tags-matcher "drill"))
                           nil))))
 
 (defun read-card (pos)
@@ -61,12 +61,12 @@
   "Interface.  g to refresh.
 
 CARDS is a list of cards to review."
-  (let ((buffer (get-buffer-create "*Space Repetition*"))
+  (let ((buffer (get-buffer-create "*Simple Drill*"))
         (cards-meta (mapcar #'read-card cards)))
     (with-current-buffer buffer
       (setq buffer-read-only nil)
       (erase-buffer)
-      (insert "Welcome to Space Repetition Buffer\n")
+      (insert "Welcome to Simple Drill Buffer\n")
       (insert "----------------------------------\n")
       (insert "\n\n\n")
       ;; (insert (format "%s" cards-meta))
@@ -74,11 +74,11 @@ CARDS is a list of cards to review."
               (insert
                (format "** TODO %s\n%s\n" (car x) (cadr x))))
             cards-meta)
-      (space-mode)
+      (simple-drill-mode)
       (outline-hide-body))
     (display-buffer buffer)))
 
-(defvar space-mode-map
+(defvar simple-drill-mode-map
   (let ((map (make-keymap)))
     (suppress-keymap map t)
     (define-key map   [tab]     'outline-toggle-children)
@@ -87,23 +87,23 @@ CARDS is a list of cards to review."
     ;; (define-key map (kbd "SPC") 'magit-diff-show-or-scroll-up)
     ;; (define-key map (kbd "DEL") 'magit-diff-show-or-scroll-down)
     map)
-  "Parent keymap for all keymaps of modes derived from `space-mode'.")
+  "Parent keymap for all keymaps of modes derived from `simple-drill-mode'.")
 
-(defun space-repetition ()
+(defun simple-drill ()
   "Dummy."
   (interactive)
   (create-interface (collect-cards)))
 
 (global-set-key (kbd "C-c h h")
-                'space-repetition)
+                'simple-drill)
 
 
-(define-derived-mode space-mode org-mode "Space"
+(define-derived-mode simple-drill-mode org-mode "SimpleDrill"
   "Parent major mode"
-  :group 'space-modes
+  :group 'simple-drill-mode
   (buffer-disable-undo)
   (setq truncate-lines t)
   (setq buffer-read-only t))
 
-(provide 'space-repetition)
-;;; space-repetition.el ends here
+(provide 'simple-drill)
+;;; simple-drill.el ends here
