@@ -16,6 +16,12 @@
   - this should remove DONE entries automatically
 
 * Introduction
+Build on org-mode is probably still too heavy weight, and create
+overhead for me to implement. I'm going to store the information in
+plain lisp.
+
+
+* Old Introduction
 
 There exists majorly two work, the =org-drill= and =pamparam=.
 
