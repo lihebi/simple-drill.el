@@ -41,28 +41,140 @@ When nil, visited links are not persisted across sessions."
   '((t :foreground "dark orange")) "" :group 'simple-drill)
 (defface red-on-white
   '((t :foreground "red")) "" :group 'simple-drill)
+(defface blue-on-white
+  '((t :foreground "blue")) "" :group 'simple-drill)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utilities
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun update-word (word score)
   "score can be 0, 1, 2 for hard, so-so, simple."
   ;; get meta list
   (let* ((meta (lax-plist-get *simple-drill-words* word))
-         (date (plist-get meta 'date))
          (level (plist-get meta 'level)))
     ;; update
     (let* ((new-level (case score
-                        ((0) (1+ level))
+                        ((0) (max (1- level) 0))
                         ((1) level)
-                        ((2) (1- level))
+                        ((2) (1+ level))
                         (t (error "error"))))
            ;; construct new meta data
-           (new-meta (plist-put (plist-put meta
-                                           'score score)
-                                'level new-level)))
+           (new-meta (plist-put
+                      (plist-put
+                       (plist-put
+                        meta 'score score)
+                       'level new-level)
+                      'date (current-time))))
       (setq *simple-drill-words*
             (lax-plist-put *simple-drill-words* word new-meta))
       ;; save file
       (simple-drill-save-history)
       (simple-drill-reload))))
+
+(defun my-time-string (time)
+  (format "%s (%s)"
+          (format-time-string "%m/%d/%y"
+                              time)
+          (- (time-to-days time)
+             (time-to-days (current-time)))))
+
+(defun scheduled-time (time level)
+  (time-add time
+            (* (expt 2 level) 24 3600)))
+
+(defun meta-get-scheduled-time-relative (meta)
+  (relative-day
+   (scheduled-time
+    (plist-get meta 'date)
+    (plist-get meta 'level))))
+
+(defun relative-day (time)
+  "Calculate the relative date from TIME to today.
+
+I.e. TIME - today."
+  (- (time-to-days time)
+     (time-to-days (current-time))))
+
+
+(defun add-word (word trans &optional date)
+  "Add a new WORD and TRANS pair."
+  ;; CAUTION: use `lax-' version because I'm using string as property
+  ;; key. I can consider using symbols:
+  ;;
+  ;; (intern "hello")
+  ;; (symbol-name 'hello)
+  (if (lax-plist-get *simple-drill-words* word)
+      (warn
+       (format "Warning: word %s already exists" word))
+    (progn
+      (setq *simple-drill-words*
+            (lax-plist-put *simple-drill-words*
+                           word `(trans ,trans
+                                        note nil
+                                        date ,(or date (current-time))
+                                        score 0
+                                        level 0)))
+      (simple-drill-save-history))))
+
+(defun test-add-word ()
+  (setq *simple-drill-words* '())
+  *simple-drill-words*
+  (add-word "pretty" "漂亮")
+  (add-word "old" "旧" (encode-time 0 0 0 1 12 2018))
+  (add-word "new" "新")
+  (add-word "bad" "坏" (encode-time 0 0 0 30 9 2018))
+  (add-word "good" "好" (encode-time 0 0 0 30 9 2019))
+  (add-word "hi" "嗨"))
+
+(defun partition-words ()
+  ;; I want to make three sections: overdue, completed today, old
+  ;; FIXME these are duplicated
+  (let* ((all-words (seq-partition *simple-drill-words* 2))
+         ;; today finished
+         (today-words (seq-filter (lambda (x)
+                                    (= 0 (relative-day
+                                          (plist-get (cadr x) 'date))))
+                                  all-words))
+         (other-words (seq-filter (lambda (x)
+                                    (not
+                                     (= 0 (relative-day
+                                           (plist-get (cadr x) 'date)))))
+                                  all-words))
+         ;; sort by schedule
+         (other-words-sorted (seq-sort
+                              (lambda (x y)
+                                (< (meta-get-scheduled-time-relative
+                                    (cadr x))
+                                   (meta-get-scheduled-time-relative
+                                    (cadr y))))
+                              other-words))
+         ;; overdue and underdue
+         (overdued-words (seq-filter
+                          (lambda (x)
+                            (>= 0 (meta-get-scheduled-time-relative
+                                   (cadr x))))
+                          other-words-sorted))
+         (underdued-words (seq-filter
+                           (lambda (x)
+                             (< 0 (meta-get-scheduled-time-relative
+                                   (cadr x))))
+                           other-words-sorted)))
+    (list overdued-words today-words underdued-words)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UI
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun show-header ()
+  "Show header."
+  (insert (format "%-10s %-15s %-8s %-8s %-15s %-15s %-15s\n"
+                  "Action" "Word" "OldScore" "Level"
+                  "LastDate" "Scheduled"
+                  "Translate")))
+
 
 (defun show-word (word meta)
   "Insert in UI the word and its meta data.
@@ -86,38 +198,24 @@ WORD is a string, META is a plist."
                    :notify (lambda (wid &rest ignore)
                              (update-word word 0)))
     (insert "  ")
-    (insert (format "%s: %s   (previous score: %s on %s, level %s)\n"
-                    word trans score date level))))
-
-;; (intern "hello")
-;; (symbol-name 'hello)
-
-(defun add-word (word trans)
-  "Add a new WORD and TRANS pair."
-  ;; CAUTION: use `lax-' version because I'm using string as property key
-  (if (lax-plist-get *simple-drill-words* word)
-      (warn
-       (format "Warning: word %s already exists" word))
-    (progn
-      (setq *simple-drill-words*
-            (lax-plist-put *simple-drill-words*
-                           word `(trans ,trans
-                                        note ""
-                                        date ""
-                                        score 0
-                                        level 0)))
-      (simple-drill-save-history))))
-
-(defun test-add-word ()
-  (setq *simple-drill-words* '())
-  *simple-drill-words*
-  (add-word "pretty" "漂亮")
-  (add-word "old" "旧")
-  (add-word "new" "新")
-  (add-word "bad" "坏")
-  (add-word "good" "好")
-  (add-word "hi" "嗨"))
-
+    (insert (format "%-15s" word))
+    (insert " ")
+    (insert (format "%-8s %-8s %-15s %-15s"
+                    score level
+                    (my-time-string date)
+                    ;; compute scheduled time
+                    ;; date + 2^level
+                    (my-time-string
+                     (scheduled-time date level))))
+    (insert " ")
+    ;; put the translation at the end, because there is no way to
+    ;; control the size of the format string
+    (widget-create 'toggle :on trans :off "??"
+                   :format "%[%v%]"
+                   :indent 8
+                   :offset 8
+                   nil)
+    (insert "\n")))
 
 (defun simple-drill-reload ()
   (interactive)
@@ -134,17 +232,11 @@ WORD is a string, META is a plist."
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
         (let ((word-wid (widget-create 'editable-field
-                                       :format "Add word: %v"
-                                       :size 13
-                                       :notify (lambda (wid &rest ignore)
-                                                 "")
-                                       ""))
+                                       :format "Add new word: %v"
+                                       :size 13 ""))
               (trans-wid (widget-create 'editable-field
                                         :format " Trans: %v"
-                                        :size 13
-                                        :notify (lambda (wid &rest ignore)
-                                                  "")
-                                        "")))
+                                        :size 13 "")))
           (widget-create 'push-button :format "  %[[Add]%]"
                          :notify (lambda (wid &rest ignore)
                                    (let ((word (widget-value word-wid))
@@ -157,14 +249,29 @@ WORD is a string, META is a plist."
         (widget-insert "\n")
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
-        (widget-insert "hello: 你好\n")
-        (widget-insert "world: 世界\n")
+        (show-header)
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
-        ;; show all
-        (mapc (lambda (x)
-                (show-word (car x) (cadr x)))
-              (seq-partition *simple-drill-words* 2))
+        (let* ((partitioned (partition-words))
+               (overdued-words (car partitioned))
+               (today-words (cadr partitioned))
+               (underdued-words (caddr partitioned)))
+          (insert (propertize "Overdue:\n" 'face 'blue-on-white))
+          (mapc (lambda (x)
+                  (show-word (car x) (cadr x)))
+                overdued-words)
+          (insert (make-string 30 ?-))
+          (insert "\n")
+          (insert (propertize "Finished Today:\n" 'face 'blue-on-white))
+          (mapc (lambda (x)
+                  (show-word (car x) (cadr x)))
+                today-words)
+          (insert (make-string 30 ?-))
+          (insert "\n")
+          (insert (propertize "Underdue:\n" 'face 'blue-on-white))
+          (mapc (lambda (x)
+                  (show-word (car x) (cadr x)))
+                underdued-words))
         (widget-setup)))
     (set-window-start (selected-window) winpos)
     (goto-char pos)))
