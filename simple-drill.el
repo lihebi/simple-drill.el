@@ -42,6 +42,28 @@ When nil, visited links are not persisted across sessions."
 (defface red-on-white
   '((t :foreground "red")) "" :group 'simple-drill)
 
+(defun update-word (word score)
+  "score can be 0, 1, 2 for hard, so-so, simple."
+  ;; get meta list
+  (let* ((meta (lax-plist-get *simple-drill-words* word))
+         (date (plist-get meta 'date))
+         (level (plist-get meta 'level)))
+    ;; update
+    (let* ((new-level (case score
+                        ((0) (1+ level))
+                        ((1) level)
+                        ((2) (1- level))
+                        (t (error "error"))))
+           ;; construct new meta data
+           (new-meta (plist-put (plist-put meta
+                                           'score score)
+                                'level new-level)))
+      (setq *simple-drill-words*
+            (lax-plist-put *simple-drill-words* word new-meta))
+      ;; save file
+      (simple-drill-save-history)
+      (simple-drill-reload))))
+
 (defun show-word (word meta)
   "Insert in UI the word and its meta data.
 
@@ -51,9 +73,18 @@ WORD is a string, META is a plist."
         (date (plist-get meta 'date))
         (score (plist-get meta 'score))
         (level (plist-get meta 'level)))
-    (widget-create 'push-button :format "%[[2]%]" :button-face 'green-on-white)
-    (widget-create 'push-button :format "%[[1]%]" :button-face 'gold-on-white)
-    (widget-create 'push-button :format "%[[0]%]" :button-face 'red-on-white)
+    (widget-create 'push-button :format "%[[2]%]"
+                   :button-face 'green-on-white
+                   :notify (lambda (wid &rest ignore)
+                             (update-word word 2)))
+    (widget-create 'push-button :format "%[[1]%]"
+                   :button-face 'gold-on-white
+                   :notify (lambda (wid &rest ignore)
+                             (update-word word 1)))
+    (widget-create 'push-button :format "%[[0]%]"
+                   :button-face 'red-on-white
+                   :notify (lambda (wid &rest ignore)
+                             (update-word word 0)))
     (insert "  ")
     (insert (format "%s: %s   (previous score: %s on %s, level %s)\n"
                     word trans score date level))))
