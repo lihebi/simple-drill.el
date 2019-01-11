@@ -16,6 +16,7 @@
   (require 'wid-edit))
 
 (defvar *simple-drill-words* '())
+;; (setq *simple-drill-words* '())
 
 (defcustom simple-drill-history-file
   (locate-user-emacs-file "simple-drill-history.el")
@@ -35,37 +36,56 @@ When nil, visited links are not persisted across sessions."
     (insert-file-contents simple-drill-history-file)
     (setq *simple-drill-words* (read (current-buffer)))))
 
-;; This is alist of (word . "word" trans . "trans" note . "note" date
-;; . (year month day) score . score level . level)
+(defface green-on-white
+  '((t :foreground "dark green")) "" :group 'simple-drill)
+(defface gold-on-white
+  '((t :foreground "dark orange")) "" :group 'simple-drill)
+(defface red-on-white
+  '((t :foreground "red")) "" :group 'simple-drill)
 
-(defun show-word (alist)
-  (let ((word (cdr (assoc 'word alist)))
-        (trans (cdr (assoc 'trans alist )))
-        (note (cdr (assoc 'note alist )))
-        (date (cdr (assoc 'date alist)))
-        (score (cdr (assoc 'score alist )))
-        (level (cdr (assoc 'level alist ))))
+(defun show-word (plist)
+  (let ((word (plist-get plist 'word))
+        (trans (plist-get plist 'trans))
+        (note (plist-get plist 'note))
+        (date (plist-get plist 'date))
+        (score (plist-get plist 'score))
+        (level (plist-get plist 'level)))
+    (widget-create 'push-button :format "%[[2]%]" :button-face 'green-on-white)
+    (widget-create 'push-button :format "%[[1]%]" :button-face 'gold-on-white)
+    (widget-create 'push-button :format "%[[0]%]" :button-face 'red-on-white)
+    (insert "  ")
     (insert (format "%s: %s   (previous score: %s on %s, level %s)\n"
-                   word trans score date level))))
+                    word trans score date level))
+    ))
 
 ;; (show-word (car *simple-drill-words*))
 
 (defun add-word (word trans)
-  (let ((all-words (mapcar (lambda (alist) (cdr (assoc 'word alist)))
-                           *simple-drill-words*)))
-    (if (member word all-words)
-        (warn
-         ;; if word already exist, do nothing, print warning
-         (format "Warning: word %s already exists" word))
-      ;; else add to the list
-      (progn
-        (add-to-list '*simple-drill-words*
-                     `((word . ,word) (trans . ,trans)
-                       (note . "") (date . "")
-                       (score . 0) (level . 0)))
-        (simple-drill-save-history)))))
+  (if (plist-member *simple-drill-words* word)
+      (warn
+       ;; if word already exist, do nothing, print warning
+       (format "Warning: word %s already exists" word))
+    ;; else add to the list
+    (progn
+      (add-to-list '*simple-drill-words*
+                   `(word ,word
+                          trans ,trans
+                          note ""
+                          date ""
+                          score 0
+                          level 0))
+      (simple-drill-save-history))))
 
 ;; (add-word "hi" "嗨")
+
+(defun test-add-word ()
+  (add-word "pretty" "漂亮")
+  (add-word "old" "旧")
+  (add-word "new" "新")
+  (add-word "bad" "坏")
+  (add-word "good" "好")
+  (add-word "hi" "嗨"))
+
 
 (defun simple-drill-reload ()
   (interactive)
@@ -98,7 +118,8 @@ When nil, visited links are not persisted across sessions."
                                    (let ((word (widget-value word-wid))
                                          (trans (widget-value trans-wid)))
                                      ;; FIXME assert non-empty
-                                     (add-word word trans)
+                                     (add-word (string-trim word)
+                                               (string-trim trans))
                                      ;; refresh
                                      (simple-drill-reload)))))
         (widget-insert "\n")
