@@ -16,7 +16,6 @@
   (require 'wid-edit))
 
 (defvar *simple-drill-words* '())
-;; (setq *simple-drill-words* '())
 
 (defcustom simple-drill-history-file
   (locate-user-emacs-file "simple-drill-history.el")
@@ -43,42 +42,44 @@ When nil, visited links are not persisted across sessions."
 (defface red-on-white
   '((t :foreground "red")) "" :group 'simple-drill)
 
-(defun show-word (plist)
-  (let ((word (plist-get plist 'word))
-        (trans (plist-get plist 'trans))
-        (note (plist-get plist 'note))
-        (date (plist-get plist 'date))
-        (score (plist-get plist 'score))
-        (level (plist-get plist 'level)))
+(defun show-word (word meta)
+  "Insert in UI the word and its meta data.
+
+WORD is a string, META is a plist."
+  (let ((trans (plist-get meta 'trans))
+        (note (plist-get meta 'note))
+        (date (plist-get meta 'date))
+        (score (plist-get meta 'score))
+        (level (plist-get meta 'level)))
     (widget-create 'push-button :format "%[[2]%]" :button-face 'green-on-white)
     (widget-create 'push-button :format "%[[1]%]" :button-face 'gold-on-white)
     (widget-create 'push-button :format "%[[0]%]" :button-face 'red-on-white)
     (insert "  ")
     (insert (format "%s: %s   (previous score: %s on %s, level %s)\n"
-                    word trans score date level))
-    ))
+                    word trans score date level))))
 
-;; (show-word (car *simple-drill-words*))
+;; (intern "hello")
+;; (symbol-name 'hello)
 
 (defun add-word (word trans)
-  (if (plist-member *simple-drill-words* word)
+  "Add a new WORD and TRANS pair."
+  ;; CAUTION: use `lax-' version because I'm using string as property key
+  (if (lax-plist-get *simple-drill-words* word)
       (warn
-       ;; if word already exist, do nothing, print warning
        (format "Warning: word %s already exists" word))
-    ;; else add to the list
     (progn
-      (add-to-list '*simple-drill-words*
-                   `(word ,word
-                          trans ,trans
-                          note ""
-                          date ""
-                          score 0
-                          level 0))
+      (setq *simple-drill-words*
+            (lax-plist-put *simple-drill-words*
+                           word `(trans ,trans
+                                        note ""
+                                        date ""
+                                        score 0
+                                        level 0)))
       (simple-drill-save-history))))
 
-;; (add-word "hi" "嗨")
-
 (defun test-add-word ()
+  (setq *simple-drill-words* '())
+  *simple-drill-words*
   (add-word "pretty" "漂亮")
   (add-word "old" "旧")
   (add-word "new" "新")
@@ -130,7 +131,9 @@ When nil, visited links are not persisted across sessions."
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
         ;; show all
-        (mapc #'show-word *simple-drill-words*)
+        (mapc (lambda (x)
+                (show-word (car x) (cadr x)))
+              (seq-partition *simple-drill-words* 2))
         (widget-setup)))
     (set-window-start (selected-window) winpos)
     (goto-char pos)))
@@ -147,7 +150,6 @@ When nil, visited links are not persisted across sessions."
     (define-key map (kbd "n") #'next-line)
     (define-key map (kbd "p") #'previous-line)
     (define-key map (kbd "g") #'simple-drill-reload)
-    (define-key map (kbd "h") #'reload-2)
     map)
   "Parent keymap for all keymaps of modes derived from `simple-drill-mode'.")
 
