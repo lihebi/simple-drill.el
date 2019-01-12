@@ -1,29 +1,69 @@
 #+TITLE: space-repetition.el
 
-* Status
-
-** TODO add properties
-- use properties to generate schedule
-
-** TODO modifying action
-- support (e)asy or (h)ard
-- mark as DONE (but does not remove. We can change this status)
-- modify master org file (this requires to maintain a link)
-  - will the rest links be modified??
-
-** TODO add refresh (g)
-- regenerate review schedule
-  - this should remove DONE entries automatically
-
 * Introduction
-Build on org-mode is probably still too heavy weight, and create
-overhead for me to implement. I'm going to store the information in
-plain lisp.
+
+=simple-drill.el= is an Emacs plugin to help with memorizing things
+using [[https://en.wikipedia.org/wiki/Spaced_repetition][space
+repetition]] algorithm.
 
 
-* Old Introduction
+There are many clients for doing this,
+e.g. [[https://apps.ankiweb.net/][Anki]]. For Emacs, there exists
+majorly two work, the =org-drill= and =pamparam=. But they are quite
+complicated.  I want a tool that is easy to use, and generate clean
+data that can be version controlled.
 
-There exists majorly two work, the =org-drill= and =pamparam=.
+
+
+The meta data is clean that can be easily version controlled. The data
+is clean lisp like this:
+
+#+BEGIN_SRC elisp
+("pretty"
+ (trans "漂亮" note nil date
+        (23609 11966 775981 692000)
+        score 2 level 7)
+ "hello"
+ (trans "你好" note nil date
+        (23609 12108 698798 475000)
+        score 0 level 6)
+ "world"
+ (trans "世界" note nil date
+        (23609 12125 136637 73000)
+        score 0 level 5))
+#+END_SRC
+
+Easy to use interface:
+- clean interface, show all information you care about
+- show all words, instead of one-by-one, for productivity. You want
+  batch-processing, do you?
+- show relative days for last update and scheduled time
+- show by three sections: overdued, underdued, completed today
+- Only three actions: =hard=, =simple=, =not sure=
+- toggle visibility of translation (the answer) by a single click on
+  the =??= field
+- Add new words directly in the interface
+
+Screenshot:
+
+[[./screenshot.png]]
+
+* Install
+
+Currently I'm not making it available on Melpa. But I recommand to use
+[[https://github.com/raxod502/straight.el][straight]] to install
+package directly from git repository. You can install and setup the
+package using this configuration:
+
+#+BEGIN_SRC elisp
+(use-package simple-drill
+  :straight (simple-drill :type git :host github
+                          :repo "lihebi/simple-drill.el"))
+#+END_SRC
+
+Run command =simple-drill= to bring the buffer.
+
+* Comparison with the =org-drill= and =pamparam=
 
 Org-drill is too complicated.
 - It pops so many properties in the entries
@@ -43,12 +83,5 @@ I don't like some design decisions of pamparam:
   method (such as Chinese), and most importantly, typing is slow,
   thinking is fast.
 
-
-That renders the feature of this project:
-- keep minimum meta data within the master org file
-- clean file structure: the header is the question, the rest is the
-  answer
-- only two score: yes or no, instead of 0-5
-- org-agenda kind of interface
-  - can show all or just show the due ones
-  - status mark just in the list
+* TODOs
+** FIXME right after adding new words, it seems the buttons will change all words
