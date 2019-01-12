@@ -67,6 +67,7 @@ When nil, visited links are not persisted across sessions."
                         meta 'score score)
                        'level new-level)
                       'date (current-time))))
+      ;; FIXME not sure if this is necessary, as plist-put has side effect
       (setq *simple-drill-words*
             (lax-plist-put *simple-drill-words* word new-meta))
       ;; save file
@@ -109,13 +110,12 @@ I.e. TIME - today."
       (warn
        (format "Warning: word %s already exists" word))
     (progn
-      (setq *simple-drill-words*
-            (lax-plist-put *simple-drill-words*
-                           word `(trans ,trans
-                                        note nil
-                                        date ,(or date (current-time))
-                                        score 0
-                                        level 0)))
+      (lax-plist-put *simple-drill-words*
+                     word `(trans ,trans
+                                  note nil
+                                  date ,(or date (current-time))
+                                  score 0
+                                  level 0))
       (simple-drill-save-history))))
 
 (defun test-add-word ()
@@ -187,6 +187,7 @@ WORD is a string, META is a plist."
         (level (plist-get meta 'level)))
     (widget-create 'push-button :format "%[[2]%]"
                    :button-face 'green-on-white
+                   :help-echo word
                    :notify (lambda (wid &rest ignore)
                              (update-word word 2)))
     (widget-create 'push-button :format "%[[1]%]"
