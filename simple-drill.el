@@ -110,12 +110,13 @@ I.e. TIME - today."
       (warn
        (format "Warning: word %s already exists" word))
     (progn
-      (lax-plist-put *simple-drill-words*
-                     word `(trans ,trans
-                                  note nil
-                                  date ,(or date (current-time))
-                                  score 0
-                                  level 0))
+      (setq *simple-drill-words*
+            (lax-plist-put *simple-drill-words*
+                           word `(trans ,trans
+                                        note nil
+                                        date ,(or date (current-time))
+                                        score 0
+                                        level 0)))
       (simple-drill-save-history))))
 
 (defun test-add-word ()
