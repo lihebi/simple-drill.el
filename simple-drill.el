@@ -43,6 +43,9 @@ When nil, visited links are not persisted across sessions."
   '((t :foreground "red")) "" :group 'simple-drill)
 (defface blue-on-white
   '((t :foreground "blue")) "" :group 'simple-drill)
+(defface simple-drill-title
+  '((t :height 1.8
+       :forground "black")) "" :group 'simple-drill)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -230,7 +233,7 @@ WORD is a string, META is a plist."
       (let ((inhibit-read-only t))
         (erase-buffer)
         (remove-overlays)
-        (widget-insert "Simple Drill\n")
+        (widget-insert (propertize "Simple Drill\n" 'face 'simple-drill-title))
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
         (let ((word-wid (widget-create 'editable-field
