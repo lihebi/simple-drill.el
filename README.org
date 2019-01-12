@@ -1,4 +1,4 @@
-#+TITLE: space-repetition.el
+#+TITLE: simple-drill.el: A simple flashcard plugin for Emacs
 
 * Introduction
 
@@ -9,9 +9,11 @@ repetition]] algorithm.
 
 There are many clients for doing this,
 e.g. [[https://apps.ankiweb.net/][Anki]]. For Emacs, there exists
-majorly two work, the =org-drill= and =pamparam=. But they are quite
-complicated.  I want a tool that is easy to use, and generate clean
-data that can be version controlled.
+majorly two work, the
+[[https://orgmode.org/worg/org-contrib/org-drill.html][=org-drill=]]
+and [[https://github.com/abo-abo/pamparam][=pamparam=]]. But they are
+quite complicated.  I want a tool that is easy to use, and generate
+clean data that can be version controlled.
 
 
 
