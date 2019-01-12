@@ -58,7 +58,10 @@ package using this configuration:
 #+BEGIN_SRC elisp
 (use-package simple-drill
   :straight (simple-drill :type git :host github
-                          :repo "lihebi/simple-drill.el"))
+                          :repo "lihebi/simple-drill.el")
+  :config
+  (setq simple-drill-history-file
+        "~/.emacs.d/simple-drill-history.el"))
 #+END_SRC
 
 Run command =simple-drill= to bring the buffer.
