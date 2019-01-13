@@ -292,11 +292,12 @@ WORD is a string, META is a plist."
 
 (defvar simple-drill-mode-map
   (let ((map (make-keymap)))
-    (suppress-keymap map t)
+    ;; (suppress-keymap map t)
     (set-keymap-parent map widget-keymap)
-    (define-key map (kbd "n") #'next-line)
-    (define-key map (kbd "p") #'previous-line)
-    (define-key map (kbd "g") #'simple-drill-reload)
+    (define-key map "n" #'next-line)
+    (define-key map "p" #'previous-line)
+    (define-key map "g" #'simple-drill-reload)
+    (define-key map "q" #'quit-window)
     map)
   "Parent keymap for all keymaps of modes derived from `simple-drill-mode'.")
 
