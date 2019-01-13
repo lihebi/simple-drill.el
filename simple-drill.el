@@ -251,7 +251,10 @@ WORD is a string, META is a plist."
                                      (add-word (string-trim word)
                                                (string-trim trans))
                                      ;; refresh
-                                     (simple-drill-reload)))))
+                                     (simple-drill-reload)
+                                     ;; move to the add-new-word textfield
+                                     (widget-backward)
+                                     (widget-backward)))))
         (widget-insert "\n")
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
