@@ -85,8 +85,9 @@ When nil, visited links are not persisted across sessions."
              (time-to-days (current-time)))))
 
 (defun scheduled-time (time level)
+  ;; the time is calculated as: 2^(min level 8)
   (time-add time
-            (* (expt 2 level) 24 3600)))
+            (* (expt 2 (min level 8)) 24 3600)))
 
 (defun meta-get-scheduled-time-relative (meta)
   (relative-day
