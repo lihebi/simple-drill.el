@@ -250,11 +250,10 @@ WORD is a string, META is a plist."
                                      ;; FIXME assert non-empty
                                      (add-word (string-trim word)
                                                (string-trim trans))
-                                     ;; refresh
-                                     (simple-drill-reload)
                                      ;; move to the add-new-word textfield
-                                     (widget-backward)
-                                     (widget-backward)))))
+                                     (widget-backward 2)
+                                     ;; refresh
+                                     (simple-drill-reload)))))
         (widget-insert "\n")
         (widget-insert (make-string 30 ?-))
         (widget-insert "\n")
