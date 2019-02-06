@@ -52,7 +52,7 @@ When nil, visited links are not persisted across sessions."
 ;; Utilities
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun update-word (word score)
+(defun simple-drill-update-word (word score)
   "score can be 0, 1, 2 for hard, so-so, simple."
   ;; get meta list
   (let* ((meta (lax-plist-get *simple-drill-words* word))
@@ -103,7 +103,7 @@ I.e. TIME - today."
      (time-to-days (current-time))))
 
 
-(defun add-word (word trans &optional date)
+(defun simple-drill-add-word (word trans &optional date)
   "Add a new WORD and TRANS pair."
   ;; CAUTION: use `lax-' version because I'm using string as property
   ;; key. I can consider using symbols:
@@ -123,15 +123,15 @@ I.e. TIME - today."
                                         level 0)))
       (simple-drill-save-history))))
 
-(defun test-add-word ()
+(defun test-simple-drill-add-word ()
   (setq *simple-drill-words* '())
   *simple-drill-words*
-  (add-word "pretty" "漂亮")
-  (add-word "old" "旧" (encode-time 0 0 0 1 12 2018))
-  (add-word "new" "新")
-  (add-word "bad" "坏" (encode-time 0 0 0 30 9 2018))
-  (add-word "good" "好" (encode-time 0 0 0 30 9 2019))
-  (add-word "hi" "嗨"))
+  (simple-drill-add-word "pretty" "漂亮")
+  (simple-drill-add-word "old" "旧" (encode-time 0 0 0 1 12 2018))
+  (simple-drill-add-word "new" "新")
+  (simple-drill-add-word "bad" "坏" (encode-time 0 0 0 30 9 2018))
+  (simple-drill-add-word "good" "好" (encode-time 0 0 0 30 9 2019))
+  (simple-drill-add-word "hi" "嗨"))
 
 (defun partition-words ()
   ;; I want to make three sections: overdue, completed today, old
@@ -194,15 +194,15 @@ WORD is a string, META is a plist."
                    :button-face 'green-on-white
                    :help-echo word
                    :notify (lambda (wid &rest ignore)
-                             (update-word word 2)))
+                             (simple-drill-update-word word 2)))
     (widget-create 'push-button :format "%[[1]%]"
                    :button-face 'gold-on-white
                    :notify (lambda (wid &rest ignore)
-                             (update-word word 1)))
+                             (simple-drill-update-word word 1)))
     (widget-create 'push-button :format "%[[0]%]"
                    :button-face 'red-on-white
                    :notify (lambda (wid &rest ignore)
-                             (update-word word 0)))
+                             (simple-drill-update-word word 0)))
     (insert "  ")
     (insert (format "%-15s" word))
     (insert " ")
@@ -248,8 +248,8 @@ WORD is a string, META is a plist."
                                    (let ((word (widget-value word-wid))
                                          (trans (widget-value trans-wid)))
                                      ;; FIXME assert non-empty
-                                     (add-word (string-trim word)
-                                               (string-trim trans))
+                                     (simple-drill-add-word (string-trim word)
+                                                            (string-trim trans))
                                      ;; move to the add-new-word textfield
                                      (widget-backward 2)
                                      ;; refresh
