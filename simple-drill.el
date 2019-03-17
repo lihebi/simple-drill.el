@@ -181,7 +181,7 @@ I.e. TIME - today."
                   "Translate")))
 
 
-(defun show-word (word meta)
+(defun simple-drill--show-word (word meta)
   "Insert in UI the word and its meta data.
 
 WORD is a string, META is a plist."
@@ -222,6 +222,19 @@ WORD is a string, META is a plist."
                    :offset 8
                    nil)
     (insert "\n")))
+
+(defun simple-drill--insert-line ()
+  "Insert a horizontal line."
+  (insert (make-string 30 ?-))
+  (insert "\n"))
+
+(defun simple-drill--show-words (words)
+  "Display WORDS in group of 10 with separators."
+  (dolist (10-words (seq-partition words 10))
+    (mapc (lambda (x)
+            (simple-drill--show-word (car x) (cadr x)))
+          10-words)
+    (simple-drill--insert-line)))
 
 (defun simple-drill-reload ()
   (interactive)
@@ -265,21 +278,11 @@ WORD is a string, META is a plist."
                (today-words (cadr partitioned))
                (underdued-words (caddr partitioned)))
           (insert (propertize "Overdue:\n" 'face 'blue-on-white))
-          (mapc (lambda (x)
-                  (show-word (car x) (cadr x)))
-                overdued-words)
-          (insert (make-string 30 ?-))
-          (insert "\n")
+          (simple-drill--show-words overdued-words)
           (insert (propertize "Finished Today:\n" 'face 'blue-on-white))
-          (mapc (lambda (x)
-                  (show-word (car x) (cadr x)))
-                today-words)
-          (insert (make-string 30 ?-))
-          (insert "\n")
+          (simple-drill--show-words today-words)
           (insert (propertize "Underdue:\n" 'face 'blue-on-white))
-          (mapc (lambda (x)
-                  (show-word (car x) (cadr x)))
-                underdued-words))
+          (simple-drill--show-words underdued-words))
         (widget-setup)))
     (set-window-start (selected-window) winpos)
     (goto-char pos)))
