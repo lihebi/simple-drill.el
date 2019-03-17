@@ -87,6 +87,13 @@ I don't like some design decisions of pamparam:
   might be super long, super complex, requiring invoking other input
   method (such as Chinese), and most importantly, typing is slow,
   thinking is fast.
+* Other Features
+
+** Non-stress drilling
+
+The drill words are divided by 10 words. There is a separation line,
+so that you have a visual goal where to stop this session.
 
 * TODOs
 ** FIXME right after adding new words, it seems the buttons will change all words
+

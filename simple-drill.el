@@ -230,7 +230,7 @@ WORD is a string, META is a plist."
 
 (defun simple-drill--show-words (words)
   "Display WORDS in group of 10 with separators."
-  (dolist (10-words (seq-partition words 10))
+  (dolist (10-words (reverse (mapcar #'reverse (seq-partition (reverse words) 10))))
     (mapc (lambda (x)
             (simple-drill--show-word (car x) (cadr x)))
           10-words)
