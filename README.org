@@ -96,4 +96,4 @@ so that you have a visual goal where to stop this session.
 
 * TODOs
 ** FIXME right after adding new words, it seems the buttons will change all words
-
+** C-c C-c dwim
